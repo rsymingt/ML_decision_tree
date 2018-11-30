@@ -1,10 +1,10 @@
 
 #include "Tree.hpp"
 
-Tree::Tree(string class_col)
+Tree::Tree(string class_col, string identifier)
 {
   // root = new Node();
-  data = new Data(class_col);
+  data = new Data(class_col, identifier);
 }
 
 float Tree::get_entropy()
@@ -12,19 +12,33 @@ float Tree::get_entropy()
 
 }
 
-void Tree::build_branch()
+void Tree::build_branches(vector<string> attr)
 {
+  if(attr.size() > 0)
+  {
+    string max = "";
+    for(string a : attr)
+    {
+      if(data->gain[a] > data->gain[max])
+        max = a;
+    }
 
+    cout << max << endl;
+  }
 }
 
 void Tree::build_tree()
 {
   data->setEntropy(); // set entropy for all attrs
 
-  for(int i = 0; i < data->attr; i ++)
-  {
+  vector<string> attr(data->attr);
 
-  }
+  attr.erase(remove(attr.begin(), attr.end(), data->class_col), attr.end());
+  attr.erase(remove(attr.begin(), attr.end(), data->identifier), attr.end());
+
+  build_branches(attr);
+
+  // build_branches(attr);
 
   // NEXT GET GAIN FOR EACH ATTRIBUTE, CHOOSE ROOT NODE AND TRAVERSE REPEAT
 }
@@ -35,6 +49,7 @@ void Tree::print_data()
   {
     cout << a << " ";
   }
+  cout << endl;
   for(vector<string> row : data->table)
   {
     for(string c : row)
@@ -65,7 +80,10 @@ void Tree::build_data(string filename)
           if(first)
           {
             if(word != data->class_col)
+            {
               row.push_back(word);
+            }
+            row.push_back(word);
             data->attr = row;
           }
         }
@@ -117,6 +135,7 @@ void Tree::build_data(string filename)
 
   for(int i = 0; i < data->attr.size(); i++)
   {
+    if(data->attr[i] == data->identifier) continue;
     for(int r = 0; r < data->table.size(); r ++)
     {
       data->value[data->attr[i]].insert(data->table[r][i]);
@@ -126,4 +145,7 @@ void Tree::build_data(string filename)
         data->outcome[data->attr[i]][data->table[r][i]].insert(class_col_values[r]);
     }
   }
+
+  data->setEntropy();
+  data->setGain();
 }

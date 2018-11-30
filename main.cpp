@@ -29,7 +29,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Tree tree("Should I play baseball?");
+  Tree tree("Should I play baseball?", "Day");
 
   tree.build_data("sets/baseball.csv");
   // tree.print_data();

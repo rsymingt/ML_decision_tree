@@ -8,6 +8,7 @@
 #include <cmath>
 #include <map>
 #include <set>
+#include <algorithm>
 
 using namespace std;
 
@@ -22,7 +23,7 @@ private:
   // int size;
 
 public:
-  string class_col;
+  string class_col, identifier;
   vector<string> attr;
 
   map<string, set<string>> unique_value;
@@ -34,13 +35,15 @@ public:
 
   float set_entropy;
   map<string, map<string, float>> entropy;
+  map<string, float> gain;
 
   string pos,neg;
   int size;
 
-  Data(string class_col);
+  Data(string class_col, string identifier);
   void setEntropy();
-  string getGain(string attribute);
+  void setGain();
+  float getGain(string attribute);
 };
 
 #endif

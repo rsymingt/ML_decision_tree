@@ -18,9 +18,10 @@ private:
   void build_branch();
 
 public:
-  Tree(string class_col);
+  Tree(string class_col, string identifier);
   void build_data(string file_name);
   void print_data();
+  void build_branches(vector<string> attr);
 
   void build_tree();
 };
