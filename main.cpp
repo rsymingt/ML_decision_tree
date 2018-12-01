@@ -29,13 +29,29 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-  Tree tree("Should I play baseball?", "Day");
+  // Tree tree("Should I play baseball?", "Yes", "No", "sets/baseball.csv");
+  //
+  // tree.ignore("Day");
 
-  tree.build_data("sets/baseball.csv");
-  // tree.print_data();
+  Tree tree("income", "<=50K", ">50K", "sets/adult.csv");
+
+  tree.ignore("age");
+  tree.ignore("fnlwgt");
+  tree.ignore("education-num");
+  tree.ignore("capital-gain");
+  tree.ignore("capital-loss");
+  tree.ignore("hours-per-week");
+
+
+  // tree.print_table();
+
   tree.build_tree();
 
-  // tree.print_data();
+  // tree.print_attrs();
+
+  // tree.print_tree();
+
+  tree.list_paths();
 
 	return 0;
 }

@@ -14,14 +14,23 @@ private:
   Data *data;
   Data *class_attr;
 
-  float get_entropy();
-  void build_branch();
+  Node *build_branches(Data *data);
+  void print_tree(Node *root);
+  void list_paths(Node *root, string path);
 
 public:
-  Tree(string class_col, string identifier);
+  Tree(string class_attr, string pos_val, string neg_val, string filename);
+
+  void ignore(string ignore);
+
+  void print_table();
+  void print_attrs();
+  void print_tree();
+
+  void list_paths();
+
   void build_data(string file_name);
   void print_data();
-  void build_branches(vector<string> attr);
 
   void build_tree();
 };

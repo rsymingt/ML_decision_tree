@@ -1,151 +1,162 @@
 
 #include "Tree.hpp"
 
-Tree::Tree(string class_col, string identifier)
+Tree::Tree(string class_attr, string pos_val, string neg_val, string filename)
 {
   // root = new Node();
-  data = new Data(class_col, identifier);
+  data = new Data(class_attr, pos_val, neg_val);
+  data->read_table(filename);
 }
 
-float Tree::get_entropy()
+void Tree::ignore(string ignore)
 {
-
+  data->ignore(ignore);
 }
 
-void Tree::build_branches(vector<string> attr)
+void Tree::print_attrs()
 {
-  if(attr.size() > 0)
+  data->print_attrs();
+}
+
+void Tree::print_table()
+{
+  data->print_table();
+}
+
+void Tree::print_tree(Node *root)
+{
+  if(root == NULL)
   {
-    string max = "";
-    for(string a : attr)
-    {
-      if(data->gain[a] > data->gain[max])
-        max = a;
-    }
-
-    cout << max << endl;
+    cout << "NULL" << endl;
+    return;
   }
+  if(root->identify() == DECIDER)
+  {
+      // do something with moveable_john
+      cout << "DECISION: " <<  root->get_key() << endl << endl;
+      return;
+  }
+
+  Attribute *attribute_node = static_cast<Attribute*>(root);
+
+  string current_attr = attribute_node->get_key();
+
+  set<string> *unique_values = attribute_node->data->get_unique_values(current_attr);
+
+  cout << "attribute: " << current_attr << endl;
+
+  for(string unique_value : *unique_values)
+  {
+    cout << "value: " << unique_value << endl;
+    print_tree(attribute_node->nodes[unique_value]);
+  }
+
+  // cout << current_attr << endl;
+}
+
+void Tree::list_paths(Node *root, string path)
+{
+  if(root == NULL)
+  {
+    // cout << "NULL" << endl;
+    return;
+  }
+  if(root->identify() == DECIDER)
+  {
+      // do something with moveable_john
+      cout << path << " = " <<  root->get_key() << endl << endl;
+      return;
+  }
+
+  Attribute *attribute_node = static_cast<Attribute*>(root);
+
+  string current_attr = attribute_node->get_key();
+
+  set<string> *unique_values = attribute_node->data->get_unique_values(current_attr);
+
+  path += current_attr + "-->";
+
+  for(string unique_value : *unique_values)
+  {
+    // path += unique_value + "  ";
+    list_paths(attribute_node->nodes[unique_value], path + unique_value + "  ");
+  }
+}
+
+void Tree::list_paths()
+{
+  list_paths(root, "");
+}
+
+void Tree::print_tree()
+{
+  print_tree(root);
+}
+
+Node *Tree::build_branches(Data *data)
+{
+  // CALCULATE SET ENTROPY
+  string decider;
+  float entropy = data->get_set_entropy(&decider);
+  if(entropy == 0) // all pos or neg
+  {
+    // cout << "DECISION: " << decider << endl;
+    //CREATE AND RETURN A DECIDER NODE
+    return new Decider(decider, decider);
+  }
+
+  // cout << entropy << endl;
+
+  // CALCULATE MAX GAIN
+  string attribute;
+  float gain = data->get_max_gain(entropy, &attribute);
+
+  // cout << "attribute: " << attribute << endl;
+
+  if(gain == -1)
+  {
+    // cout << "DECISION: " << "Not Sure" << endl;
+    // run out of attributes NOT SURE WHAT TO DO HERE
+    return new Decider("Not Sure", "Not Sure");
+  }
+  // IF MAX GAIN IS -1 OR NO ATTRIBUTE THEN WERE DONE
+
+  // OTHERWISE USE GAIN ATTRIBUTE IN ROOT AND BUILD NEW DATA FOR EACH VALUE
+  // IN ATTRIBUTE THEN SEND RECURSIVELY
+
+  Attribute *root = new Attribute(attribute);
+  root->data = data;
+
+  for(string unique_value : (*(data->get_unique_values()))[attribute])
+  {
+    // cout << "value: " << unique_value << endl;
+
+    Data *new_data = new Data(data->get_class_attr(), data->get_pos_val(),
+      data->get_neg_val());
+
+    for(string ignore : *(data->get_ignores()))
+      new_data->ignore(ignore);
+
+    data->generate_table(new_data, attribute, unique_value);
+
+    // new_data->print_table();
+
+    new_data->build();
+
+    root->nodes[unique_value] = build_branches(new_data);
+
+    // delete new_data;
+  }
+
+  return root;
 }
 
 void Tree::build_tree()
 {
-  data->setEntropy(); // set entropy for all attrs
-
-  vector<string> attr(data->attr);
-
-  attr.erase(remove(attr.begin(), attr.end(), data->class_col), attr.end());
-  attr.erase(remove(attr.begin(), attr.end(), data->identifier), attr.end());
-
-  build_branches(attr);
-
-  // build_branches(attr);
-
-  // NEXT GET GAIN FOR EACH ATTRIBUTE, CHOOSE ROOT NODE AND TRAVERSE REPEAT
+  data->build();
+  root = build_branches(data);
 }
 
 void Tree::print_data()
 {
-  for(string a : data->attr)
-  {
-    cout << a << " ";
-  }
-  cout << endl;
-  for(vector<string> row : data->table)
-  {
-    for(string c : row)
-    {
-      cout << c << " ";
-    }
-    cout << endl;
-  }
-}
-
-void Tree::build_data(string filename)
-{
-  ifstream data_file("sets/baseball.csv");
-  char c;
-  string word;
-  bool first = true;
-  int column = 0;
-  vector<string> row;
-  while((c = data_file.get()) != EOF)
-  {
-    switch(c)
-    {
-      case '\r':
-        break;
-      case '\n':
-        if(word.length() > 0)
-        {
-          if(first)
-          {
-            if(word != data->class_col)
-            {
-              row.push_back(word);
-            }
-            row.push_back(word);
-            data->attr = row;
-          }
-        }
-
-        if(!first)
-        {
-          row.push_back(word);
-          data->table.push_back(row);
-          data->size++;
-        }
-
-        row.clear();
-
-        word = "";
-        first = false;
-        column = 0;
-        break;
-      case ',':
-        // cout << word << endl;
-        if(word.length() > 0)
-        {
-          if(first)
-          {
-            row.push_back(word);
-          }
-        }
-
-        if(!first)
-        {
-          row.push_back(word);
-        }
-
-        word = "";
-        column ++;
-        break;
-      default:
-        word += c;
-        break;
-    }
-  }
-
-  vector<string> class_col_values;
-
-  for(int i = 0; i < data->table.size(); i ++)
-  {
-    class_col_values.push_back(data->table[i][data->table[i].size()-1]);
-    data->value[data->class_col].insert(data->table[i][data->table[i].size()-1]);
-  }
-
-  for(int i = 0; i < data->attr.size(); i++)
-  {
-    if(data->attr[i] == data->identifier) continue;
-    for(int r = 0; r < data->table.size(); r ++)
-    {
-      data->value[data->attr[i]].insert(data->table[r][i]);
-      data->unique_value[data->attr[i]].insert(data->table[r][i]);
-
-      if(data->attr[i] != data->class_col) // dont insert outcome of the outcome
-        data->outcome[data->attr[i]][data->table[r][i]].insert(class_col_values[r]);
-    }
-  }
-
-  data->setEntropy();
-  data->setGain();
 }
