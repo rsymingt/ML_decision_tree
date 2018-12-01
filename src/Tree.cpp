@@ -54,6 +54,35 @@ void Tree::print_tree(Node *root)
   // cout << current_attr << endl;
 }
 
+string Tree::decide_row(vector<string> attrs, vector<string> row, Node *root)
+{
+  if(root == NULL)
+  {
+    return "NULL";
+  }
+  if(root->identify() == DECIDER)
+  {
+    return root->get_key();
+  }
+
+  Attribute *attr_node = static_cast<Attribute*>(root);
+
+  string current_attr = attr_node->get_key();
+
+  ptrdiff_t a = distance(attrs.begin(),
+    find(attrs.begin(), attrs.end(), current_attr));
+
+  if(a >= attrs.size())
+  {
+    // didnt find
+    return "NOT FOUND";
+  }
+
+  string value = row[a];
+
+  return decide_row(attrs, row, attr_node->nodes[value]);
+}
+
 void Tree::list_paths(Node *root, string path)
 {
   if(root == NULL)
@@ -159,4 +188,21 @@ void Tree::build_tree()
 
 void Tree::print_data()
 {
+}
+
+vector<string> Tree::test_data(Data *test_data)
+{
+  vector<vector<string>> test_table = test_data->get_test_table();
+  vector<string> test_attrs = test_data->get_test_attrs();
+
+  // for(string a : test_attrs)
+  //   cout << a << ",";
+  // cout << endl;
+
+  vector<string> answer;
+  for(vector<string> row : test_table)
+  {
+    answer.push_back(decide_row(test_attrs, row, root));
+  }
+  return answer;
 }

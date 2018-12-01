@@ -33,6 +33,7 @@ private:
   map<string, map<string, multiset<string>>> outcomes;
 
 public:
+  string filename;
   // string class_col, identifier;
   // vector<string> attr;
   //
@@ -55,6 +56,7 @@ public:
   void build();
 
   void read_table(string filename);
+  // void read_test_table(string filename);
   void print_table();
   void print_attrs();
   void generate_table(Data *data, string attr, string value);
@@ -77,6 +79,12 @@ public:
   string get_class_attr();
   string get_pos_val();
   string get_neg_val();
+
+  vector<vector<string>> *get_table();
+  vector<vector<string>> get_test_table();
+  vector<string> get_test_attrs();
+
+  vector<string> get_table_attrs();
 
 };
 

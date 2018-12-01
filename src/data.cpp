@@ -51,6 +51,7 @@ void Data::build(){
 
 void Data::read_table(string filename)
 {
+  this->filename = filename;
   ifstream table_file(filename);
 
   char c;
@@ -92,6 +93,12 @@ void Data::read_table(string filename)
 
   table_file.close();
 }
+
+// void Data::read_test_table(string filename)
+// {
+//
+//   this->filename = filename;
+// }
 
 void Data::print_table()
 {
@@ -306,4 +313,46 @@ string Data::get_pos_val()
 string Data::get_neg_val()
 {
   return neg_val;
+}
+
+vector<vector<string>> *Data::get_table()
+{
+  return &table;
+}
+
+vector<vector<string>> Data::get_test_table()
+{
+  vector<vector<string>> test_table;
+  for(vector<string> row : table)
+  {
+    vector<string> test_row;
+    for(int c = 0; c < row.size(); c ++)
+    {
+      if(table_attrs[c] == class_attr ||
+        (find(ignores.begin(), ignores.end(), table_attrs[c])) != ignores.end())
+        continue;
+      test_row.push_back(row[c]);
+    }
+    test_table.push_back(test_row);
+    // test_row.clear();
+  }
+  return test_table;
+}
+
+vector<string> Data::get_test_attrs()
+{
+  vector<string> attrs;
+  for(string a : table_attrs)
+  {
+    if(a == class_attr ||
+      (find(ignores.begin(), ignores.end(), a)) != ignores.end())
+      continue;
+      attrs.push_back(a);
+  }
+  return attrs;
+}
+
+vector<string> Data::get_table_attrs()
+{
+  return table_attrs;
 }

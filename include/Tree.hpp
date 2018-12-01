@@ -33,6 +33,10 @@ public:
   void print_data();
 
   void build_tree();
+
+  string decide_row(vector<string> attrs, vector<string> row, Node *root);
+
+  vector<string> test_data(Data *test_data);
 };
 
 #endif
